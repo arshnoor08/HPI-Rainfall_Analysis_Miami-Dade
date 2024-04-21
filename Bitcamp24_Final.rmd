@@ -1,0 +1,103 @@
+
+
+```{r}
+require(foreign)
+require(ggplot2)
+require(MASS)
+require(Hmisc)
+require(reshape2)
+```
+
+```{r}
+# Converts data to tbl class which are easier to examine than data frames. R displays only the data that fits onscreen. 
+dplyr::tbl_df(Miami_Rainfall_Edited)
+
+dplyr::glimpse(Miami_Rainfall_Edited)
+```
+
+```{r}
+Miami_Rainfall_Edited$Rainfall_Classification <- as.factor(Miami_Rainfall_Edited$Rainfall_Classification)
+levels(Miami_Rainfall_Edited$Rainfall_Classification)
+
+Miami_Rainfall_Edited$Avg_HPI <- as.factor(Miami_Rainfall_Edited$Avg_HPI)
+levels(Miami_Rainfall_Edited$Avg_HPI)
+
+Miami_Rainfall_Edited$Classification_HPI <- as.factor(Miami_Rainfall_Edited$Classification_HPI)
+levels(Miami_Rainfall_Edited$Classification_HPI)
+
+```
+
+```{r}
+levels(Miami_Rainfall_Edited$Rainfall_Classification)=c("Heavy","Moderate","Slight")
+
+# Miami_Rainfall_Edited$Rainfall_Classification<-droplevels(Miami_Rainfall_Edited$Rainfall_Classification)
+
+levels(Miami_Rainfall_Edited$Rainfall_Classification)=c("Heavy","Moderate","Slight")
+
+#Miami_Rainfall_Edited$Rainfall_Classification<-droplevels(Miami_Rainfall_Edited$Rainfall_Classification)
+levels(Miami_Rainfall_Edited$Rainfall_Classification)
+
+levels(Miami_Rainfall_Edited$Classification_HPI)=c("Low", "Average", "High")
+
+#Miami_Rainfall_Edited$Classification_HPI<-droplevels(Miami_Rainfall_Edited$Classification_HPI)
+levels(Miami_Rainfall_Edited$Classification_HPI)
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# ORDINAL REGRESSION:
+ggplot(Miami_Rainfall_Edited, aes(y = Classification_HPI, x = Rainfall_Classification)) +
+  geom_boxplot(size = .75) +
+  geom_jitter(alpha = .5) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1))
+```
+
+```{r}
+model <- polr(Classification_HPI ~ Rainfall_Classification, data = Miami_Rainfall_Edited, Hess=TRUE)
+
+```
+
+```{r}
+summary(model)
+```
+```{r}
+generalhoslem::lipsitz.test(model)
+```
+
+
+```{r}
+(ctable <- coef(summary(model)))
+```
+
+```{r}
+p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+```
+
+```{r}
+(ctable <- cbind(ctable, "p value" = p))
+```
+```{r}
+exp(coef(model))
+```
+
+
+```{r}
+library(ggplot2)
+```
+
+
+```{r}
+ggplot(Miami_Rainfall_Edited, aes(x = `Rainfall_Classification`, y = `Classification_HPI`, fill = Rainfall_Classification)) +
+  geom_col(position = position_dodge(width = 0.5), aes(color = Rainfall_Classification)) +
+  labs(title = "Title") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  guides(shape = TRUE) +
+  theme(legend.position = "left")
+```
+```
+
+
